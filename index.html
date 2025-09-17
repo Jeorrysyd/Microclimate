@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>微气候 - 不是治疗，只是休息</title>
+    <meta name="description" content="3分钟独处恢复体验，给职场人一个安静的恢复空间">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- 首页 - 状态选择 -->
+    <div id="home-page" class="page active">
+        <div class="container">
+            <header class="header">
+                <h1 class="title">微气候</h1>
+                <p class="subtitle">A microclimate can be something so small and so easily disturbed that even a tiny change can have a big impact.<br>一个心里出现的小气候虽然看似微小且极易被外界扰乱，但即便是些微的变化，也可能引发巨大的涟漪效应。</p>
+            </header>
+            
+            <main class="main-content">
+                <div class="intro-section">
+                    <p class="intro-text">给自己3分钟时间，创造一个安静的恢复空间</p>
+                </div>
+                
+                <div class="state-selection">
+                    <h2 class="section-title">你现在感觉怎么样？</h2>
+                    <div class="state-options">
+                        <button class="state-option" data-state="great">
+                            <span class="emoji">😊</span>
+                            <span class="label">很好</span>
+                        </button>
+                        <button class="state-option" data-state="okay">
+                            <span class="emoji">😐</span>
+                            <span class="label">还行</span>
+                        </button>
+                        <button class="state-option" data-state="tired">
+                            <span class="emoji">😔</span>
+                            <span class="label">有点累</span>
+                        </button>
+                        <button class="state-option" data-state="very-tired">
+                            <span class="emoji">😩</span>
+                            <span class="label">很累</span>
+                        </button>
+                        <button class="state-option" data-state="exhausted">
+                            <span class="emoji">🤯</span>
+                            <span class="label">崩溃</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="action-section">
+                    <button id="start-btn" class="primary-btn" disabled>
+                        开始3分钟恢复
+                    </button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 恢复体验页 -->
+    <div id="experience-page" class="page">
+        <div class="container">
+            <header class="header">
+                <button id="back-btn" class="back-btn">← 返回</button>
+                <h1 class="title">恢复体验</h1>
+            </header>
+            
+            <main class="main-content">
+                <div class="timer-section">
+                    <div class="timer-display">
+                        <span id="timer">03:00</span>
+                    </div>
+                    <div class="breathing-circle" id="breathing-circle">
+                        <div class="breathing-text" id="breathing-text">深呼吸...</div>
+                    </div>
+                </div>
+                
+                <div class="audio-section">
+                    <h3 class="audio-title">环境音</h3>
+                    <div class="audio-controls">
+                        <button class="audio-btn" data-audio="waves">
+                            <span class="audio-icon">🌊</span>
+                            <span class="audio-label">海浪声</span>
+                        </button>
+                        <button class="audio-btn" data-audio="none">
+                            <span class="audio-icon">🔇</span>
+                            <span class="audio-label">静音</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-section">
+                    <button id="pause-btn" class="control-btn">暂停</button>
+                    <button id="restart-btn" class="control-btn">重新开始</button>
+                    <button id="end-early-btn" class="control-btn end-early">提前结束</button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 完成反馈页 -->
+    <div id="feedback-page" class="page">
+        <div class="container">
+            <header class="header">
+                <h1 class="title">体验完成</h1>
+            </header>
+            
+            <main class="main-content">
+                <div class="completion-section">
+                    <div class="completion-icon">✨</div>
+                    <h2 class="completion-title">恭喜你完成了3分钟恢复体验</h2>
+                    <p class="completion-text">希望这短暂的时光能为你带来一些宁静</p>
+                </div>
+                
+                <div class="feedback-section">
+                    <h3 class="feedback-title">这次体验对你有帮助吗？</h3>
+                    <div class="feedback-options">
+                        <button class="feedback-btn" data-feedback="helpful">
+                            <span class="feedback-icon">👍</span>
+                            <span class="feedback-label">有用</span>
+                        </button>
+                        <button class="feedback-btn" data-feedback="neutral">
+                            <span class="feedback-icon">😐</span>
+                            <span class="feedback-label">一般</span>
+                        </button>
+                        <button class="feedback-btn" data-feedback="not-helpful">
+                            <span class="feedback-icon">👎</span>
+                            <span class="feedback-label">没用</span>
+                        </button>
+                    </div>
+                    
+                    <!-- 新增的关键问题 -->
+                    <div class="key-questions-section">
+                        <h4 class="key-questions-title">关键问题</h4>
+                        
+                        <div class="question-item">
+                            <label class="question-label">你会在什么情况下想起使用这个工具？</label>
+                            <textarea id="usage-scenario-input" class="question-input" placeholder="请描述你会在什么情况下使用这个工具..." maxlength="300"></textarea>
+                        </div>
+                        
+                        <div class="question-item">
+                            <label class="question-label">如果工作很忙，你还会使用吗？</label>
+                            <div class="question-options">
+                                <button class="question-option-btn" data-question="busy-usage" data-answer="yes">
+                                    <span class="option-icon">✅</span>
+                                    <span class="option-label">会使用</span>
+                                </button>
+                                <button class="question-option-btn" data-question="busy-usage" data-answer="maybe">
+                                    <span class="option-icon">🤔</span>
+                                    <span class="option-label">可能会</span>
+                                </button>
+                                <button class="question-option-btn" data-question="busy-usage" data-answer="no">
+                                    <span class="option-icon">❌</span>
+                                    <span class="option-label">不会使用</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="question-item">
+                            <label class="question-label">这个工具给你的第一印象是什么？</label>
+                            <textarea id="first-impression-input" class="question-input" placeholder="请描述你对这个工具的第一印象..." maxlength="300"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="suggestion-section">
+                        <textarea id="suggestion-input" placeholder="有什么建议或想法吗？（可选）" maxlength="200"></textarea>
+                    </div>
+                    
+                    <button id="submit-feedback-btn" class="primary-btn">提交反馈</button>
+                </div>
+                
+                <div class="restart-section">
+                    <button id="restart-experience-btn" class="secondary-btn">再来一次</button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 音频元素 -->
+    <audio id="waves-audio" preload="auto" loop>
+        <source src="audio/waves.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="script.js"></script>
+    
+    <!-- 数据看板 -->
+    <div id="adminPanel" style="display:none; position:fixed; top:10px; right:10px; background:white; padding:15px; border:1px solid #ccc; border-radius:5px; z-index:9999; max-width:300px; font-size:12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
+        <h4 style="margin:0 0 10px 0; color:#2c3e50;">数据看板 📊</h4>
+        <div id="statsDisplay"></div>
+        <div style="margin-top:10px;">
+            <button onclick="updateAdminPanel()" style="margin:2px; padding:4px 8px; font-size:11px; background:#f39c12; color:white; border:none; border-radius:3px; cursor:pointer;">刷新</button>
+            <button onclick="closeAdmin()" style="margin:2px; padding:4px 8px; font-size:11px; background:#95a5a6; color:white; border:none; border-radius:3px; cursor:pointer;">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        // 按 Ctrl+Shift+D 显示数据看板
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'D') {
+                const panel = document.getElementById('adminPanel');
+                panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+                if (panel.style.display === 'block') {
+                    updateAdminPanel();
+                }
+            }
+        });
+
+        function updateAdminPanel() {
+            try {
+                // 获取事件数据
+                const events = JSON.parse(localStorage.getItem('microclimate_events') || '[]');
+                
+                // 计算统计数据
+                const stats = {
+                    pageViews: 0,
+                    stateSelected: 0,
+                    experienceStarted: 0,
+                    experienceCompleted: 0,
+                    experienceEndedEarly: 0,
+                    feedbackSubmitted: 0
+                };
+                
+                // 统计各种事件
+                events.forEach(event => {
+                    switch(event.action) {
+                        case 'page_view':
+                            stats.pageViews++;
+                            break;
+                        case 'state_selected':
+                            stats.stateSelected++;
+                            break;
+                        case 'experience_started':
+                            stats.experienceStarted++;
+                            break;
+                        case 'experience_completed':
+                            stats.experienceCompleted++;
+                            break;
+                        case 'experience_ended_early':
+                            stats.experienceEndedEarly++;
+                            break;
+                        case 'feedback_submitted':
+                            stats.feedbackSubmitted++;
+                            break;
+                    }
+                });
+                
+                // 计算时间分析
+                const hourlyUse = {};
+                let eveningUse = 0;
+                let totalUse = 0;
+                
+                events.forEach(event => {
+                    if (event.hour !== undefined) {
+                        hourlyUse[event.hour] = (hourlyUse[event.hour] || 0) + 1;
+                        totalUse++;
+                        if (event.hour >= 21 && event.hour <= 23) {
+                            eveningUse++;
+                        }
+                    }
+                });
+                
+                const eveningRate = totalUse > 0 ? (eveningUse / totalUse * 100).toFixed(1) : 0;
+                
+                // 更新显示
+                document.getElementById('statsDisplay').innerHTML = `
+                    <div style="margin-bottom:8px;">
+                        <strong style="color:#e74c3c;">核心转化率：</strong>
+                        <div style="margin-left:10px;">
+                            <div>完成率: ${stats.experienceStarted ? (stats.experienceCompleted/stats.experienceStarted*100).toFixed(1) : 0}%</div>
+                            <div>状态选择率: ${stats.pageViews ? (stats.stateSelected/stats.pageViews*100).toFixed(1) : 0}%</div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <strong style="color:#27ae60;">使用数据：</strong>
+                        <div style="margin-left:10px;">
+                            <div>总访问: ${stats.pageViews}</div>
+                            <div>完成体验: ${stats.experienceCompleted}</div>
+                            <div>反馈数: ${stats.feedbackSubmitted}</div>
+                        </div>
+                    </div>
+                    <div style="margin-bottom:8px;">
+                        <strong style="color:#3498db;">时间分析：</strong>
+                        <div style="margin-left:10px;">
+                            <div>晚间使用率: ${eveningRate}%</div>
+                            <div>总事件: ${totalUse}</div>
+                        </div>
+                    </div>
+                    <div style="font-size:10px; color:#7f8c8d; margin-top:8px; border-top:1px solid #ecf0f1; padding-top:5px;">
+                        按 Ctrl+Shift+D 打开/关闭此面板
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('statsDisplay').innerHTML = `
+                    <div style="color:#e74c3c;">数据加载错误</div>
+                    <div style="font-size:10px; color:#7f8c8d;">${error.message}</div>
+                `;
+            }
+        }
+
+        function closeAdmin() {
+            document.getElementById('adminPanel').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
