@@ -462,6 +462,18 @@ class MicroclimateApp {
         // 在控制台输出（实际项目中可以发送到服务器）
         console.log('Event tracked:', eventData);
         
+        // Vercel Analytics 事件追踪
+        if (window.va) {
+            window.va('track', action, {
+                ...data,
+                hour: now.getHours(),
+                dayOfWeek: now.getDay(),
+                isEvening: now.getHours() >= 21 && now.getHours() <= 23,
+                isWorkHours: now.getHours() >= 9 && now.getHours() <= 17,
+                isWeekend: now.getDay() === 0 || now.getDay() === 6
+            });
+        }
+        
         // 存储到localStorage（用于调试）
         try {
             const events = JSON.parse(localStorage.getItem('microclimate_events') || '[]');

@@ -1,0 +1,23 @@
+{
+  "name": "microclimate-web",
+  "version": "1.0.0",
+  "description": "微气候Web版是一个面向职场人的去医疗化状态管理工具体验版，通过3分钟独处恢复体验传达产品核心价值。",
+  "main": "script.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jeorrysyd/Microclimate.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jeorrysyd/Microclimate/issues"
+  },
+  "homepage": "https://github.com/Jeorrysyd/Microclimate#readme",
+  "dependencies": {
+    "@vercel/analytics": "^1.5.0"
+  }
+}
