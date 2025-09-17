@@ -130,13 +130,18 @@ class MicroclimateApp {
     playAudio(type) {
         const audioElement = document.getElementById(`${type}-audio`);
         if (audioElement) {
+            console.log(`尝试播放音频: ${type}`, audioElement.src);
             audioElement.currentTime = 0;
             audioElement.play().catch(error => {
                 console.log('音频播放失败:', error);
+                console.log('音频元素:', audioElement);
+                console.log('音频源:', audioElement.src);
                 // 移动端浏览器需要用户交互才能播放音频
                 // 显示提示信息
                 this.showAudioError(type);
             });
+        } else {
+            console.log(`音频元素未找到: ${type}-audio`);
         }
     }
 
