@@ -11,6 +11,7 @@ class MicroclimateApp {
         this.startTime = Date.now();
         this.breathingPhase = 'inhale'; // 呼吸阶段：inhale(吸气) 或 exhale(呼气)
         this.breathingCycle = 0; // 呼吸周期计数
+        this.hasShownReleaseText = false; // 是否已显示神经系统释放文字
         
         this.init();
     }
@@ -207,39 +208,55 @@ class MicroclimateApp {
         let guideText = '';
         let showBreathing = false;
         
-        if (totalSeconds < 5) {
-            guideText = '轻松坐着，双脚平放地面，手轻轻放在肚子上';
-            // 隐藏圆圈
-            breathingCircle.classList.remove('active');
-        } else if (totalSeconds < 10) {
-            guideText = '用鼻子慢慢吸气，感觉肚子像气球一样微微鼓起';
-            showBreathing = true;
-            // 显示圆圈并开始动画
-            breathingCircle.classList.add('active');
-        } else if (totalSeconds < 15) {
-            guideText = '用鼻子慢慢吐气，感觉肚子自然收回';
-            showBreathing = true;
-            breathingCircle.classList.add('active');
+        // 简化为三阶段循环，每12秒一个循环
+        const cycleTime = totalSeconds % 12;
+        showBreathing = true;
+        breathingCircle.classList.add('active');
+        
+        // 更新引导文字
+        const introTextElement = document.getElementById('intro-text');
+        
+        // 检查是否已经显示过神经系统释放文字
+        if (!this.hasShownReleaseText && totalSeconds >= 8) {
+            this.hasShownReleaseText = true;
+        }
+        
+        if (cycleTime < 4) {
+            guideText = '正常吸气...';
+            if (introTextElement && !this.hasShownReleaseText) {
+                introTextElement.textContent = '让我们开始使用最有效的快速平静技术';
+            }
+        } else if (cycleTime < 8) {
+            guideText = '不呼气，现在再吸一口气，填满肺部...';
+            if (introTextElement && !this.hasShownReleaseText) {
+                introTextElement.textContent = '让我们开始使用最有效的快速平静技术';
+            }
         } else {
-            guideText = '吸吐气都维持 4-5 秒，不用刻意憋气。专心感受肚子的起伏就好。就这样，非常好，继续关注你的呼吸';
-            showBreathing = true;
-            breathingCircle.classList.add('active');
+            guideText = '慢慢通过嘴唇呼出所有空气。';
+            if (introTextElement && this.hasShownReleaseText) {
+                introTextElement.textContent = '感受到释放了吗？这是你的神经系统在转向平静...';
+            }
         }
         
         // 圆圈内的简单提示（只有在显示呼吸阶段才显示）
         let breathingText = '';
         if (showBreathing) {
-            // 从第5秒开始计算呼吸周期，确保圆圈显示时总是从"吸气"开始
-            const breathingStartTime = totalSeconds - 5; // 从显示圆圈开始计算
-            const cycleSecond = breathingStartTime % 8; // 8秒一个呼吸周期（4秒吸气+4秒呼气）
-            if (cycleSecond < 4) {
-                // 吸气阶段
-                this.breathingPhase = 'inhale';
-                breathingText = '吸气...';
+            // 清除之前的动画类
+            breathingCircle.classList.remove('short-inhale', 'deep-inhale', 'long-exhale');
+            
+            // 简化为三阶段循环
+            if (cycleTime < 4) {
+                this.breathingPhase = 'short-inhale';
+                breathingText = '短吸气';
+                breathingCircle.classList.add('short-inhale');
+            } else if (cycleTime < 8) {
+                this.breathingPhase = 'deep-inhale';
+                breathingText = '深吸气...';
+                breathingCircle.classList.add('deep-inhale');
             } else {
-                // 呼气阶段
-                this.breathingPhase = 'exhale';
-                breathingText = '呼气...';
+                this.breathingPhase = 'long-exhale';
+                breathingText = '长呼气...';
+                breathingCircle.classList.add('long-exhale');
             }
         }
         

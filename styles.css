@@ -207,6 +207,33 @@ body {
     margin-bottom: var(--spacing-lg);
 }
 
+/* 小倒计时显示 */
+.timer-display-small {
+    margin: var(--spacing-md) 0;
+}
+
+.timer-display-small #timer {
+    font-size: 1.5rem;
+    font-weight: 200;
+    color: var(--text-secondary);
+    font-family: 'Courier New', monospace;
+    text-shadow: 
+        0 0 15px rgba(255, 255, 255, 0.5),
+        0 0 30px rgba(100, 181, 246, 0.3);
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+}
+
+/* 引导文字 */
+.intro-text {
+    font-size: var(--font-size-medium);
+    color: var(--text-secondary);
+    margin-top: var(--spacing-sm);
+    opacity: 0.9;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+}
+
 .experience-title {
     font-size: 2rem;
     color: var(--text-primary);
@@ -633,17 +660,53 @@ body {
 .breathing-circle.active {
     opacity: 1;
     transform: scale(1);
-    animation: breathe 8s ease-in-out infinite;
 }
 
-@keyframes breathe {
-    0%, 100% {
-        transform: scale(1);
+/* 短吸气 - 从很小开始渐渐变大一点点 */
+.breathing-circle.short-inhale {
+    animation: shortInhale 4s ease-in-out infinite;
+}
+
+@keyframes shortInhale {
+    0% {
+        transform: scale(0.8);
         opacity: 0.8;
     }
-    50% {
-        transform: scale(1.2);
+    100% {
+        transform: scale(1.1);
+        opacity: 0.9;
+    }
+}
+
+/* 深吸气 - 接着慢慢变大很多 */
+.breathing-circle.deep-inhale {
+    animation: deepInhale 4s ease-in-out infinite;
+}
+
+@keyframes deepInhale {
+    0% {
+        transform: scale(1.1);
+        opacity: 0.9;
+    }
+    100% {
+        transform: scale(1.4);
         opacity: 1;
+    }
+}
+
+/* 长呼气 - 渐渐慢慢变小到短吸气的大小 */
+.breathing-circle.long-exhale {
+    animation: longExhale 4s ease-in-out infinite;
+}
+
+@keyframes longExhale {
+    0% {
+        transform: scale(1.4);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.8);
+        opacity: 0.8;
     }
 }
 
@@ -741,6 +804,28 @@ body {
 
 .audio-label {
     font-size: var(--font-size-small);
+}
+
+/* 科学说明 */
+.scientific-note {
+    margin-top: var(--spacing-md);
+    text-align: center;
+    opacity: 0.8;
+}
+
+.scientific-note p {
+    font-size: var(--font-size-small);
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin: 0;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px var(--shadow-primary);
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 /* 控制区域 */
