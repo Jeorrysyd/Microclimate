@@ -722,10 +722,106 @@ document.addEventListener('DOMContentLoaded', () => {
             return { hourlyUse, eveningRate, totalEvents: totalUse };
         };
         
+        // 添加查看用户反馈的函数
+        window.viewFeedback = () => {
+            const events = JSON.parse(localStorage.getItem('microclimate_events') || '[]');
+            const feedbackEvents = events.filter(event => event.action === 'feedback_submitted');
+            
+            if (feedbackEvents.length === 0) {
+                console.log('暂无用户反馈数据');
+                return;
+            }
+            
+            console.log(`=== 用户反馈汇总 (共${feedbackEvents.length}条) ===`);
+            
+            feedbackEvents.forEach((feedback, index) => {
+                console.log(`\n--- 反馈 #${index + 1} ---`);
+                console.log('时间:', new Date(feedback.timestamp).toLocaleString());
+                console.log('反馈评价:', feedback.feedback);
+                
+                if (feedback.suggestion && feedback.suggestion.trim()) {
+                    console.log('建议意见:', feedback.suggestion);
+                }
+                
+                // 显示关键问题答案
+                if (feedback.keyQuestions) {
+                    console.log('\n关键问题回答:');
+                    
+                    if (feedback.keyQuestions.usageScenario && feedback.keyQuestions.usageScenario.trim()) {
+                        console.log('使用场景:', feedback.keyQuestions.usageScenario);
+                    }
+                    
+                    if (feedback.keyQuestions.busyUsage) {
+                        const busyUsageMap = {
+                            'yes': '会使用',
+                            'maybe': '可能会',
+                            'no': '不会使用'
+                        };
+                        console.log('忙碌时使用意愿:', busyUsageMap[feedback.keyQuestions.busyUsage] || feedback.keyQuestions.busyUsage);
+                    }
+                    
+                    if (feedback.keyQuestions.firstImpression && feedback.keyQuestions.firstImpression.trim()) {
+                        console.log('第一印象:', feedback.keyQuestions.firstImpression);
+                    }
+                }
+                
+                console.log('---');
+            });
+            
+            // 统计分析
+            console.log('\n=== 反馈统计分析 ===');
+            
+            // 反馈评价统计
+            const feedbackStats = {};
+            feedbackEvents.forEach(event => {
+                feedbackStats[event.feedback] = (feedbackStats[event.feedback] || 0) + 1;
+            });
+            
+            console.log('反馈评价分布:');
+            Object.entries(feedbackStats).forEach(([type, count]) => {
+                const rate = (count / feedbackEvents.length * 100).toFixed(1);
+                const typeMap = {
+                    'helpful': '有用 👍',
+                    'neutral': '一般 😐',
+                    'not-helpful': '没用 👎'
+                };
+                console.log(`  ${typeMap[type] || type}: ${count}次 (${rate}%)`);
+            });
+            
+            // 忙碌时使用意愿统计
+            const busyUsageStats = {};
+            feedbackEvents.forEach(event => {
+                if (event.keyQuestions && event.keyQuestions.busyUsage) {
+                    busyUsageStats[event.keyQuestions.busyUsage] = (busyUsageStats[event.keyQuestions.busyUsage] || 0) + 1;
+                }
+            });
+            
+            if (Object.keys(busyUsageStats).length > 0) {
+                console.log('\n忙碌时使用意愿分布:');
+                Object.entries(busyUsageStats).forEach(([type, count]) => {
+                    const rate = (count / Object.values(busyUsageStats).reduce((a, b) => a + b, 0) * 100).toFixed(1);
+                    const typeMap = {
+                        'yes': '会使用 ✅',
+                        'maybe': '可能会 🤔',
+                        'no': '不会使用 ❌'
+                    };
+                    console.log(`  ${typeMap[type] || type}: ${count}次 (${rate}%)`);
+                });
+            }
+            
+            // 有建议意见的比例
+            const withSuggestion = feedbackEvents.filter(event => event.suggestion && event.suggestion.trim()).length;
+            const suggestionRate = (withSuggestion / feedbackEvents.length * 100).toFixed(1);
+            console.log(`\n提供建议意见的用户: ${withSuggestion}/${feedbackEvents.length} (${suggestionRate}%)`);
+            
+            return feedbackEvents;
+        };
+        
         console.log('调试功能已加载:');
         console.log('- debugStats() - 查看统计数据');
         console.log('- timeAnalysis() - 查看时间使用分析');
         console.log('- analyzeTimePatterns() - 分析时间模式');
+        console.log('- viewFeedback() - 查看用户具体反馈意见');
         console.log('- clearData() - 清除本地数据');
     }
 });
