@@ -662,9 +662,9 @@ body {
     transform: scale(1);
 }
 
-/* 短吸气 - 从很小开始渐渐变大一点点 */
+/* 短吸气 - 从很小开始渐渐变大一点点（慢，2秒） */
 .breathing-circle.short-inhale {
-    animation: shortInhale 4s ease-in-out infinite;
+    animation: shortInhale 2s ease-in-out infinite;
 }
 
 @keyframes shortInhale {
@@ -678,9 +678,9 @@ body {
     }
 }
 
-/* 深吸气 - 接着慢慢变大很多 */
+/* 深吸气 - 接着慢慢变大很多（慢，2秒） */
 .breathing-circle.deep-inhale {
-    animation: deepInhale 4s ease-in-out infinite;
+    animation: deepInhale 2s ease-in-out infinite;
 }
 
 @keyframes deepInhale {
@@ -694,7 +694,7 @@ body {
     }
 }
 
-/* 长呼气 - 渐渐慢慢变小到短吸气的大小 */
+/* 长呼气 - 渐渐慢慢变小到短吸气的大小（慢，4秒） */
 .breathing-circle.long-exhale {
     animation: longExhale 4s ease-in-out infinite;
 }

@@ -208,8 +208,8 @@ class MicroclimateApp {
         let guideText = '';
         let showBreathing = false;
         
-        // 简化为三阶段循环，每12秒一个循环
-        const cycleTime = totalSeconds % 12;
+        // 简化为三阶段循环，每8秒一个循环
+        const cycleTime = totalSeconds % 8;
         showBreathing = true;
         breathingCircle.classList.add('active');
         
@@ -217,16 +217,16 @@ class MicroclimateApp {
         const introTextElement = document.getElementById('intro-text');
         
         // 检查是否已经显示过神经系统释放文字
-        if (!this.hasShownReleaseText && totalSeconds >= 8) {
+        if (!this.hasShownReleaseText && totalSeconds >= 4) {
             this.hasShownReleaseText = true;
         }
         
-        if (cycleTime < 4) {
+        if (cycleTime < 2) {
             guideText = '正常吸气...';
             if (introTextElement && !this.hasShownReleaseText) {
                 introTextElement.textContent = '让我们开始使用最有效的快速平静技术';
             }
-        } else if (cycleTime < 8) {
+        } else if (cycleTime < 4) {
             guideText = '不呼气，现在再吸一口气，填满肺部...';
             if (introTextElement && !this.hasShownReleaseText) {
                 introTextElement.textContent = '让我们开始使用最有效的快速平静技术';
@@ -244,18 +244,18 @@ class MicroclimateApp {
             // 清除之前的动画类
             breathingCircle.classList.remove('short-inhale', 'deep-inhale', 'long-exhale');
             
-            // 简化为三阶段循环
-            if (cycleTime < 4) {
+            // 简化为三阶段循环：短吸气2秒，深吸气2秒，长呼气4秒
+            if (cycleTime < 2) {
                 this.breathingPhase = 'short-inhale';
                 breathingText = '短吸气';
                 breathingCircle.classList.add('short-inhale');
-            } else if (cycleTime < 8) {
+            } else if (cycleTime < 4) {
                 this.breathingPhase = 'deep-inhale';
-                breathingText = '深吸气...';
+                breathingText = '深吸气';
                 breathingCircle.classList.add('deep-inhale');
             } else {
                 this.breathingPhase = 'long-exhale';
-                breathingText = '长呼气...';
+                breathingText = '深呼气';
                 breathingCircle.classList.add('long-exhale');
             }
         }
