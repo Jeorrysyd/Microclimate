@@ -148,8 +148,8 @@ class MicroclimateApp {
     // 显示音频错误提示
     showAudioError(type) {
         const audioNames = {
-            'birds': '鸟声',
-            'rain': '雨声', 
+            'birds': '春天鸟鸣声',
+            'rain': '大雨白噪音', 
             'heartbeat': '心跳声',
             'waves': '海浪声'
         };
