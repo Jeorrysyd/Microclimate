@@ -77,6 +77,18 @@
                 <div class="audio-section">
                     <h3 class="audio-title">环境音</h3>
                     <div class="audio-controls">
+                        <button class="audio-btn" data-audio="birds">
+                            <span class="audio-icon">🐦</span>
+                            <span class="audio-label">鸟声</span>
+                        </button>
+                        <button class="audio-btn" data-audio="rain">
+                            <span class="audio-icon">🌧️</span>
+                            <span class="audio-label">雨声</span>
+                        </button>
+                        <button class="audio-btn" data-audio="heartbeat">
+                            <span class="audio-icon">💓</span>
+                            <span class="audio-label">心跳声</span>
+                        </button>
                         <button class="audio-btn" data-audio="waves">
                             <span class="audio-icon">🌊</span>
                             <span class="audio-label">海浪声</span>
@@ -176,8 +188,17 @@
     </div>
 
     <!-- 音频元素 -->
+    <audio id="birds-audio" preload="auto" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_195105.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="rain-audio" preload="auto" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_8558.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="heartbeat-audio" preload="auto" loop>
+        <source src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_241465.mp3" type="audio/mpeg">
+    </audio>
     <audio id="waves-audio" preload="auto" loop>
-        <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav">
+        <source src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_121349.mp3" type="audio/mpeg">
     </audio>
 
     <script src="script.js"></script>

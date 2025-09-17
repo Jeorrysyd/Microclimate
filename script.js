@@ -142,8 +142,14 @@ class MicroclimateApp {
 
     // 显示音频错误提示
     showAudioError(type) {
-        const audioName = type === 'rain' ? '雨声' : '海浪声';
-        console.log(`${audioName}音频暂时无法播放，请稍后再试`);
+        const audioNames = {
+            'birds': '鸟声',
+            'rain': '雨声', 
+            'heartbeat': '心跳声',
+            'waves': '海浪声'
+        };
+        const audioName = audioNames[type] || '音频';
+        console.log(`${audioName}暂时无法播放，请稍后再试`);
         // 可以在这里添加用户友好的提示
     }
 
