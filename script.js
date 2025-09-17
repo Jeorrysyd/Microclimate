@@ -500,50 +500,27 @@ class MicroclimateApp {
     }
 
     // 数据埋点
-    trackEvent(action, data = {}) {
-        const now = new Date();
+    trackEvent(eventName, data = {}) {
+        // 更新统计数据
+        const stats = JSON.parse(localStorage.getItem('microclimatStats') || '{}');
+        stats[eventName] = (stats[eventName] || 0) + 1;
+        localStorage.setItem('microclimatStats', JSON.stringify(stats));
+
+        // 新增：记录详细事件数据
         const eventData = {
-            session_id: this.sessionId,
-            timestamp: now.toISOString(),
-            action: action,
-            data: data,
-            // 新增时间戳记录
-            hour: now.getHours(),
-            dayOfWeek: now.getDay(), // 0=周日, 1=周一, ..., 6=周六
-            date: now.toDateString(),
-            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            isEvening: now.getHours() >= 21 && now.getHours() <= 23, // 晚9-11点
-            isWorkHours: now.getHours() >= 9 && now.getHours() <= 17, // 工作时间
-            isWeekend: now.getDay() === 0 || now.getDay() === 6 // 周末
+            event: eventName,
+            timestamp: new Date().toISOString(),
+            hour: new Date().getHours(),
+            dayOfWeek: new Date().getDay(),
+            date: new Date().toDateString(),
+            ...data
         };
-        
-        // 在控制台输出（实际项目中可以发送到服务器）
-        console.log('Event tracked:', eventData);
-        
-        // Vercel Analytics 事件追踪
-        if (typeof window !== 'undefined' && window.va) {
-            try {
-                window.va('track', action, {
-                    ...data,
-                    hour: now.getHours(),
-                    dayOfWeek: now.getDay(),
-                    isEvening: now.getHours() >= 21 && now.getHours() <= 23,
-                    isWorkHours: now.getHours() >= 9 && now.getHours() <= 17,
-                    isWeekend: now.getDay() === 0 || now.getDay() === 6
-                });
-            } catch (error) {
-                console.log('Vercel Analytics tracking error:', error);
-            }
-        }
-        
-        // 存储到localStorage（用于调试）
-        try {
-            const events = JSON.parse(localStorage.getItem('microclimate_events') || '[]');
-            events.push(eventData);
-            localStorage.setItem('microclimate_events', JSON.stringify(events));
-        } catch (error) {
-            console.log('Failed to store event:', error);
-        }
+
+        const events = JSON.parse(localStorage.getItem('microclimatEvents') || '[]');
+        events.push(eventData);
+        localStorage.setItem('microclimatEvents', JSON.stringify(events));
+
+        console.log('Event tracked:', eventName, eventData);
     }
 
     // 获取统计数据
@@ -780,3 +757,31 @@ window.addEventListener('beforeunload', (e) => {
         e.returnValue = '体验正在进行中，确定要离开吗？';
     }
 });
+
+// 在 debugStats 函数后添加
+function analyzeTimePatterns() {
+    const events = JSON.parse(localStorage.getItem('microclimatEvents') || '[]');
+
+    if (events.length === 0) {
+        console.log('暂无时间数据');
+        return;
+    }
+
+    // 按小时分组
+    const hourlyUse = {};
+    events.forEach(event => {
+        const hour = event.hour;
+        hourlyUse[hour] = (hourlyUse[hour] || 0) + 1;
+    });
+
+    // 计算晚间使用率（关键指标）
+    const eveningUse = (hourlyUse[21] || 0) + (hourlyUse[22] || 0) + (hourlyUse[23] || 0);
+    const totalUse = Object.values(hourlyUse).reduce((a, b) => a + b, 0);
+    const eveningRate = totalUse > 0 ? (eveningUse / totalUse * 100).toFixed(1) : 0;
+
+    console.log('每小时使用分布:', hourlyUse);
+    console.log(`晚9-11点使用率: ${eveningRate}%`);
+    console.log('总事件数:', totalUse);
+
+    return { hourlyUse, eveningRate, totalEvents: totalUse };
+}

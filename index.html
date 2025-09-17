@@ -217,118 +217,99 @@
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
     
+    <!-- Vercel Speed Insights -->
+    <script>
+        window.si = window.si || function () { (window.siq = window.siq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/speed-insights/script.js"></script>
+    
     <!-- 数据看板 -->
-    <div id="adminPanel" style="display:none; position:fixed; top:10px; right:10px; background:white; padding:15px; border:1px solid #ccc; border-radius:5px; z-index:9999; max-width:300px; font-size:12px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);">
-        <h4 style="margin:0 0 10px 0; color:var(--text-primary);">数据看板 📊</h4>
-        <div id="statsDisplay"></div>
-        <div style="margin-top:10px;">
-            <button onclick="updateAdminPanel()" style="margin:2px; padding:4px 8px; font-size:11px; background:#f39c12; color:white; border:none; border-radius:3px; cursor:pointer;">刷新</button>
-            <button onclick="closeAdmin()" style="margin:2px; padding:4px 8px; font-size:11px; background:#95a5a6; color:white; border:none; border-radius:3px; cursor:pointer;">关闭</button>
-        </div>
+    <div id="adminPanel" style="display:none; position:fixed; top:10px; right:10px; background:white; padding:15px; border:2px solid #333; border-radius:8px; z-index:9999; max-width:320px; font-size:14px; color:#333; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+        <h4 style="margin:0 0 10px 0; color:#333;">数据看板 📊</h4>
+        <div id="statsDisplay" style="color:#333;"></div>
+        <button onclick="updateAdminPanel()" style="margin:5px; padding:8px 12px; background:#007bff; color:white; border:none; border-radius:4px; cursor:pointer;">刷新</button>
+        <button onclick="showDetailedData()" style="margin:5px; padding:8px 12px; background:#28a745; color:white; border:none; border-radius:4px; cursor:pointer;">详细数据</button>
+        <button onclick="closeAdmin()" style="margin:5px; padding:8px 12px; background:#dc3545; color:white; border:none; border-radius:4px; cursor:pointer;">关闭</button>
+    </div>
+    
+    <!-- 详细数据面板 -->
+    <div id="detailPanel" style="display:none; position:fixed; top:10px; left:10px; background:white; padding:20px; border:2px solid #333; border-radius:8px; z-index:9999; max-width:600px; max-height:80vh; overflow-y:auto; font-size:14px; color:#333; box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+        <h4 style="margin:0 0 15px 0; color:#333;">详细数据 📋</h4>
+        <div id="detailDisplay" style="color:#333;"></div>
+        <button onclick="closeDetailPanel()" style="margin:10px 5px 0 0; padding:8px 12px; background:#dc3545; color:white; border:none; border-radius:4px; cursor:pointer;">关闭</button>
     </div>
 
     <script>
         // 按 Ctrl+Shift+D 显示数据看板
         document.addEventListener('keydown', function(e) {
             if (e.ctrlKey && e.shiftKey && e.key === 'D') {
-                const panel = document.getElementById('adminPanel');
-                panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
-                if (panel.style.display === 'block') {
-                    updateAdminPanel();
-                }
+                document.getElementById('adminPanel').style.display = 'block';
+                updateAdminPanel();
             }
         });
 
         function updateAdminPanel() {
-            try {
-                // 获取事件数据
-                const events = JSON.parse(localStorage.getItem('microclimate_events') || '[]');
-                
-                // 计算统计数据
-                const stats = {
-                    pageViews: 0,
-                    stateSelected: 0,
-                    experienceStarted: 0,
-                    experienceCompleted: 0,
-                    experienceEndedEarly: 0,
-                    feedbackSubmitted: 0
-                };
-                
-                // 统计各种事件
-                events.forEach(event => {
-                    switch(event.action) {
-                        case 'page_view':
-                            stats.pageViews++;
-                            break;
-                        case 'state_selected':
-                            stats.stateSelected++;
-                            break;
-                        case 'experience_started':
-                            stats.experienceStarted++;
-                            break;
-                        case 'experience_completed':
-                            stats.experienceCompleted++;
-                            break;
-                        case 'experience_ended_early':
-                            stats.experienceEndedEarly++;
-                            break;
-                        case 'feedback_submitted':
-                            stats.feedbackSubmitted++;
-                            break;
+            const stats = JSON.parse(localStorage.getItem('microclimatStats') || '{}');
+            const timeData = analyzeTimePatterns();
+
+            document.getElementById('statsDisplay').innerHTML = `
+                <p><strong>核心转化率：</strong></p>
+                <p>完成率: ${stats.experienceStarted ? (stats.experienceCompleted/stats.experienceStarted*100).toFixed(1) : 0}%</p>
+                <p>状态选择率: ${stats.pageViews ? (stats.stateSelected/stats.pageViews*100).toFixed(1) : 0}%</p>
+                <p><strong>使用数据：</strong></p>
+                <p>总访问: ${stats.pageViews || 0}</p>
+                <p>完成体验: ${stats.experienceCompleted || 0}</p>
+                <p>反馈数: ${stats.feedbackSubmitted || 0}</p>
+                <p><strong>时间分析：</strong></p>
+                <p>晚间使用率: ${timeData ? timeData.eveningRate : 0}%</p>
+                <p>总事件: ${timeData ? timeData.totalEvents : 0}</p>
+                <p><small>按 Ctrl+Shift+D 打开此面板</small></p>
+            `;
+        }
+        
+        function showDetailedData() {
+            const stats = JSON.parse(localStorage.getItem('microclimatStats') || '{}');
+            const events = JSON.parse(localStorage.getItem('microclimatEvents') || '[]');
+            const timeData = analyzeTimePatterns();
+            
+            // 按小时分组显示
+            let hourlyBreakdown = '';
+            if (timeData && timeData.hourlyUse) {
+                hourlyBreakdown = '<p><strong>每小时使用分布：</strong></p>';
+                for (let hour = 0; hour < 24; hour++) {
+                    const count = timeData.hourlyUse[hour] || 0;
+                    if (count > 0) {
+                        hourlyBreakdown += `<p>${hour}:00-${hour}:59: ${count}次</p>`;
                     }
-                });
-                
-                // 计算时间分析
-                const hourlyUse = {};
-                let eveningUse = 0;
-                let totalUse = 0;
-                
-                events.forEach(event => {
-                    if (event.hour !== undefined) {
-                        hourlyUse[event.hour] = (hourlyUse[event.hour] || 0) + 1;
-                        totalUse++;
-                        if (event.hour >= 21 && event.hour <= 23) {
-                            eveningUse++;
-                        }
-                    }
-                });
-                
-                const eveningRate = totalUse > 0 ? (eveningUse / totalUse * 100).toFixed(1) : 0;
-                
-                // 更新显示
-                document.getElementById('statsDisplay').innerHTML = `
-                    <div style="margin-bottom:8px;">
-                        <strong style="color:var(--text-primary);">核心转化率：</strong>
-                        <div style="margin-left:10px;">
-                            <div>完成率: ${stats.experienceStarted ? (stats.experienceCompleted/stats.experienceStarted*100).toFixed(1) : 0}%</div>
-                            <div>状态选择率: ${stats.pageViews ? (stats.stateSelected/stats.pageViews*100).toFixed(1) : 0}%</div>
-                        </div>
-                    </div>
-                    <div style="margin-bottom:8px;">
-                        <strong style="color:var(--text-primary);">使用数据：</strong>
-                        <div style="margin-left:10px;">
-                            <div>总访问: ${stats.pageViews}</div>
-                            <div>完成体验: ${stats.experienceCompleted}</div>
-                            <div>反馈数: ${stats.feedbackSubmitted}</div>
-                        </div>
-                    </div>
-                    <div style="margin-bottom:8px;">
-                        <strong style="color:var(--text-primary);">时间分析：</strong>
-                        <div style="margin-left:10px;">
-                            <div>晚间使用率: ${eveningRate}%</div>
-                            <div>总事件: ${totalUse}</div>
-                        </div>
-                    </div>
-                    <div style="font-size:10px; color:var(--text-secondary); margin-top:8px; border-top:1px solid #ecf0f1; padding-top:5px;">
-                        按 Ctrl+Shift+D 打开/关闭此面板
-                    </div>
-                `;
-            } catch (error) {
-                document.getElementById('statsDisplay').innerHTML = `
-                    <div style="color:var(--text-primary);">数据加载错误</div>
-                    <div style="font-size:10px; color:var(--text-secondary);">${error.message}</div>
-                `;
+                }
             }
+            
+            // 最近事件列表
+            let recentEvents = '<p><strong>最近10个事件：</strong></p>';
+            const recent = events.slice(-10).reverse();
+            recent.forEach(event => {
+                const time = new Date(event.timestamp).toLocaleString('zh-CN');
+                recentEvents += `<p style="margin:2px 0; padding:2px; background:#f5f5f5;">${time} - ${event.eventName}</p>`;
+            });
+            
+            // 详细统计
+            const detailStats = `
+                <p><strong>详细统计数据：</strong></p>
+                <p>页面访问: ${stats.pageViews || 0}</p>
+                <p>状态选择: ${stats.stateSelected || 0}</p>
+                <p>体验开始: ${stats.experienceStarted || 0}</p>
+                <p>体验完成: ${stats.experienceCompleted || 0}</p>
+                <p>音频播放: ${stats.audioPlayed || 0}</p>
+                <p>反馈提交: ${stats.feedbackSubmitted || 0}</p>
+                <p>总事件数: ${events.length}</p>
+            `;
+            
+            document.getElementById('detailDisplay').innerHTML = detailStats + hourlyBreakdown + recentEvents;
+            document.getElementById('detailPanel').style.display = 'block';
+        }
+        
+        function closeDetailPanel() {
+            document.getElementById('detailPanel').style.display = 'none';
         }
 
         function closeAdmin() {
