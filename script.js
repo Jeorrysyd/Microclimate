@@ -201,20 +201,50 @@ class MicroclimateApp {
         if (!this.isRunning || this.isPaused) return;
         
         const totalSeconds = 180 - this.timeLeft;
-        const cycleSecond = totalSeconds % 8; // 8秒一个呼吸周期（4秒吸气+4秒呼气）
+        const breathingCircle = document.querySelector('.breathing-circle');
         
-        let prompt = '';
-        if (cycleSecond < 4) {
-            // 吸气阶段
-            this.breathingPhase = 'inhale';
-            prompt = '深吸气...';
+        // 旁边的详细引导
+        let guideText = '';
+        let showBreathing = false;
+        
+        if (totalSeconds < 5) {
+            guideText = '轻松坐着，双脚平放地面，手轻轻放在肚子上';
+            // 隐藏圆圈
+            breathingCircle.classList.remove('active');
+        } else if (totalSeconds < 10) {
+            guideText = '用鼻子慢慢吸气，感觉肚子像气球一样微微鼓起';
+            showBreathing = true;
+            // 显示圆圈并开始动画
+            breathingCircle.classList.add('active');
+        } else if (totalSeconds < 15) {
+            guideText = '用鼻子慢慢吐气，感觉肚子自然收回';
+            showBreathing = true;
+            breathingCircle.classList.add('active');
         } else {
-            // 呼气阶段
-            this.breathingPhase = 'exhale';
-            prompt = '慢呼气...';
+            guideText = '吸吐气都维持 4-5 秒，不用刻意憋气。专心感受肚子的起伏就好。就这样，非常好，继续关注你的呼吸';
+            showBreathing = true;
+            breathingCircle.classList.add('active');
         }
         
-        document.getElementById('breathing-text').textContent = prompt;
+        // 圆圈内的简单提示（只有在显示呼吸阶段才显示）
+        let breathingText = '';
+        if (showBreathing) {
+            // 从第5秒开始计算呼吸周期，确保圆圈显示时总是从"吸气"开始
+            const breathingStartTime = totalSeconds - 5; // 从显示圆圈开始计算
+            const cycleSecond = breathingStartTime % 8; // 8秒一个呼吸周期（4秒吸气+4秒呼气）
+            if (cycleSecond < 4) {
+                // 吸气阶段
+                this.breathingPhase = 'inhale';
+                breathingText = '吸气...';
+            } else {
+                // 呼气阶段
+                this.breathingPhase = 'exhale';
+                breathingText = '呼气...';
+            }
+        }
+        
+        document.getElementById('breathing-text').textContent = breathingText;
+        document.getElementById('breathing-guide').textContent = guideText;
     }
 
     // 切换暂停状态
@@ -438,7 +468,7 @@ class MicroclimateApp {
         // 更新页面标题
         const titles = {
             'home-page': '微气候 - 不是治疗，只是休息',
-            'experience-page': '恢复体验 - 微气候',
+            'experience-page': '呼吸RESET - 微气候',
             'feedback-page': '体验完成 - 微气候'
         };
         document.title = titles[pageId] || '微气候';
