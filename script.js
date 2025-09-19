@@ -54,6 +54,9 @@ class MicroclimateApp {
         document.querySelectorAll('.feedback-btn').forEach(btn => {
             btn.addEventListener('click', (e) => this.selectFeedback(e));
         });
+        
+        // 检查提交按钮状态
+        this.checkSubmitButtonState();
 
         // 关键问题选项按钮
         document.querySelectorAll('.question-option-btn').forEach(btn => {
@@ -61,7 +64,10 @@ class MicroclimateApp {
         });
 
         // 提交反馈
-        document.getElementById('submit-feedback-btn').addEventListener('click', () => this.submitFeedback());
+        const submitBtn = document.getElementById('submit-feedback-btn');
+        if (submitBtn) {
+            submitBtn.addEventListener('click', () => this.submitFeedback());
+        }
 
         // 重新开始体验
         document.getElementById('restart-experience-btn').addEventListener('click', () => this.restartExperience());
@@ -208,7 +214,7 @@ class MicroclimateApp {
         let guideText = '';
         let showBreathing = false;
         
-        // 简化为三阶段循环，每8秒一个循环
+        // 恢复为三阶段循环，每8秒一个循环（短吸气2秒，深吸气2秒，长呼气4秒）
         const cycleTime = totalSeconds % 8;
         showBreathing = true;
         breathingCircle.classList.add('active');
@@ -221,47 +227,44 @@ class MicroclimateApp {
             this.hasShownReleaseText = true;
         }
         
+        // 将引导文字放入圆圈内
+        let breathingText = '';
         if (cycleTime < 2) {
-            guideText = '正常吸气...';
+            breathingText = '正常吸气...';
             if (introTextElement && !this.hasShownReleaseText) {
                 introTextElement.textContent = '让我们开始使用最有效的快速平静技术';
             }
         } else if (cycleTime < 4) {
-            guideText = '不呼气，现在再吸一口气，填满肺部...';
+            breathingText = '不呼气，现在再吸一口气，填满肺部...';
             if (introTextElement && !this.hasShownReleaseText) {
                 introTextElement.textContent = '让我们开始使用最有效的快速平静技术';
             }
         } else {
-            guideText = '慢慢通过嘴唇呼出所有空气。';
+            breathingText = '慢慢通过嘴唇呼出所有空气。';
             if (introTextElement && this.hasShownReleaseText) {
                 introTextElement.textContent = '感受到释放了吗？这是你的神经系统在转向平静...';
             }
         }
         
-        // 圆圈内的简单提示（只有在显示呼吸阶段才显示）
-        let breathingText = '';
+        // 设置呼吸阶段和动画
         if (showBreathing) {
             // 清除之前的动画类
             breathingCircle.classList.remove('short-inhale', 'deep-inhale', 'long-exhale');
             
-            // 简化为三阶段循环：短吸气2秒，深吸气2秒，长呼气4秒
+            // 恢复为三阶段循环：短吸气2秒，深吸气2秒，长呼气4秒
             if (cycleTime < 2) {
                 this.breathingPhase = 'short-inhale';
-                breathingText = '短吸气';
                 breathingCircle.classList.add('short-inhale');
             } else if (cycleTime < 4) {
                 this.breathingPhase = 'deep-inhale';
-                breathingText = '深吸气';
                 breathingCircle.classList.add('deep-inhale');
             } else {
                 this.breathingPhase = 'long-exhale';
-                breathingText = '深呼气';
                 breathingCircle.classList.add('long-exhale');
             }
         }
         
         document.getElementById('breathing-text').textContent = breathingText;
-        document.getElementById('breathing-guide').textContent = guideText;
     }
 
     // 切换暂停状态
@@ -353,9 +356,8 @@ class MicroclimateApp {
         
         this.selectedFeedback = feedback;
         
-        // 启用提交按钮
-        const submitBtn = document.getElementById('submit-feedback-btn');
-        submitBtn.disabled = false;
+        // 检查提交按钮状态
+        this.checkSubmitButtonState();
     }
 
     // 选择关键问题选项
@@ -381,38 +383,96 @@ class MicroclimateApp {
 
     // 提交反馈
     submitFeedback() {
-        if (!this.selectedFeedback) return;
+        const feedbackText = document.getElementById('feedback-text');
+        const contactEmail = document.getElementById('contact-email');
         
-        const suggestion = document.getElementById('suggestion-input').value.trim();
-        const usageScenario = document.getElementById('usage-scenario-input').value.trim();
-        const firstImpression = document.getElementById('first-impression-input').value.trim();
-        
-        // 收集关键问题数据
-        const keyQuestionsData = {
-            usageScenario: usageScenario,
-            busyUsage: this.questionAnswers?.busyUsage || null,
-            firstImpression: firstImpression
+        const feedbackData = {
+            type: 'simple',
+            rating: this.selectedFeedback || null,
+            feedback: feedbackText ? feedbackText.value.trim() : '',
+            contact: contactEmail ? contactEmail.value.trim() : '',
+            sessionId: this.sessionId,
+            timestamp: new Date().toISOString(),
+            sessionData: {
+                selectedState: this.currentState,
+                duration: 180 - this.timeLeft,
+                audioUsed: this.currentAudio
+            }
         };
-        
-        this.trackEvent('feedback_submitted', {
-            feedback: this.selectedFeedback,
-            suggestion: suggestion,
-            hasSuggestion: suggestion.length > 0,
-            keyQuestions: keyQuestionsData,
-            hasUsageScenario: usageScenario.length > 0,
-            hasFirstImpression: firstImpression.length > 0
-        });
-        
-        // 显示提交成功提示
+
+        // 验证是否有内容
+        if (!feedbackData.rating && !feedbackData.feedback) {
+            alert('请至少选择一个评价或填写反馈意见');
+            return;
+        }
+
+        // 保存到本地存储
+        const existingFeedback = JSON.parse(localStorage.getItem('microclimate_feedback') || '[]');
+        existingFeedback.push(feedbackData);
+        localStorage.setItem('microclimate_feedback', JSON.stringify(existingFeedback));
+
+        // 跟踪事件
+        this.trackEvent('feedback_submitted', feedbackData);
+
+        // 显示感谢消息
+        this.showFeedbackThankYou();
+
+        console.log('反馈已提交:', feedbackData);
+    }
+
+    // 检查提交按钮状态
+    checkSubmitButtonState() {
         const submitBtn = document.getElementById('submit-feedback-btn');
-        const originalText = submitBtn.textContent;
-        submitBtn.textContent = '已提交 ✓';
-        submitBtn.disabled = true;
+        const feedbackText = document.getElementById('feedback-text');
+        const contactEmail = document.getElementById('contact-email');
         
-        setTimeout(() => {
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-        }, 2000);
+        if (submitBtn) {
+            const hasRating = this.selectedFeedback !== null;
+            const hasFeedback = feedbackText && feedbackText.value.trim() !== '';
+            
+            submitBtn.disabled = !(hasRating || hasFeedback);
+        }
+        
+        // 绑定输入事件（只绑定一次）
+        if (feedbackText && !feedbackText.hasAttribute('data-bound')) {
+            feedbackText.addEventListener('input', () => this.checkSubmitButtonState());
+            feedbackText.setAttribute('data-bound', 'true');
+        }
+        if (contactEmail && !contactEmail.hasAttribute('data-bound')) {
+            contactEmail.addEventListener('input', () => this.checkSubmitButtonState());
+            contactEmail.setAttribute('data-bound', 'true');
+        }
+    }
+
+    // 显示反馈感谢消息
+    showFeedbackThankYou() {
+        const submitBtn = document.getElementById('submit-feedback-btn');
+        if (submitBtn) {
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '✅ 感谢你的反馈！';
+            submitBtn.disabled = true;
+            submitBtn.style.background = '#4CAF50';
+            
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                submitBtn.style.background = 'var(--accent-color)';
+                
+                // 清空表单
+                const feedbackText = document.getElementById('feedback-text');
+                const contactEmail = document.getElementById('contact-email');
+                if (feedbackText) feedbackText.value = '';
+                if (contactEmail) contactEmail.value = '';
+                
+                // 清除评价选择
+                const feedbackBtns = document.querySelectorAll('.feedback-btn');
+                feedbackBtns.forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                
+                this.selectedFeedback = null;
+            }, 3000);
+        }
     }
 
     // 重新开始体验
@@ -424,9 +484,9 @@ class MicroclimateApp {
         this.isPaused = false;
         this.isRunning = false;
         this.selectedFeedback = null;
-        this.questionAnswers = {};
         this.breathingPhase = 'inhale';
         this.breathingCycle = 0;
+        this.hasShownReleaseText = false;
         
         // 停止所有音频
         this.stopAllAudio();
@@ -444,14 +504,13 @@ class MicroclimateApp {
             btn.classList.remove('selected');
         });
         
-        document.querySelectorAll('.question-option-btn').forEach(btn => {
-            btn.classList.remove('selected');
-        });
-        
         document.getElementById('start-btn').disabled = true;
-        document.getElementById('suggestion-input').value = '';
-        document.getElementById('usage-scenario-input').value = '';
-        document.getElementById('first-impression-input').value = '';
+        
+        // 清空反馈表单
+        const feedbackText = document.getElementById('feedback-text');
+        const contactEmail = document.getElementById('contact-email');
+        if (feedbackText) feedbackText.value = '';
+        if (contactEmail) contactEmail.value = '';
         
         // 返回首页
         this.showPage('home-page');
@@ -881,3 +940,234 @@ function analyzeTimePatterns() {
 
     return { hourlyUse, eveningRate, totalEvents: totalUse };
 }
+
+// Typeform 表单功能
+class TypeformManager {
+    constructor() {
+        this.currentStep = 1;
+        this.totalSteps = 4;
+        this.formData = {};
+        this.init();
+    }
+
+    init() {
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        // 反馈方式选择
+        document.querySelectorAll('.method-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => this.selectFeedbackMethod(e));
+        });
+
+        // Typeform 选项点击
+        document.querySelectorAll('.typeform-option').forEach(option => {
+            option.addEventListener('click', (e) => this.selectTypeformOption(e));
+        });
+
+        // 下一步按钮
+        document.querySelectorAll('.typeform-next-btn').forEach(btn => {
+            btn.addEventListener('click', () => this.nextStep());
+        });
+
+        // 提交按钮
+        document.querySelector('.typeform-submit-btn')?.addEventListener('click', () => this.submitTypeform());
+    }
+
+    selectFeedbackMethod(event) {
+        const btn = event.currentTarget;
+        const method = btn.dataset.method;
+
+        // 移除其他选中状态
+        document.querySelectorAll('.method-btn').forEach(b => {
+            b.classList.remove('active');
+        });
+
+        // 添加选中状态
+        btn.classList.add('active');
+
+        // 显示对应的表单
+        document.querySelectorAll('.feedback-form').forEach(form => {
+            form.classList.remove('active');
+        });
+
+        const targetForm = document.getElementById(`${method}-feedback`);
+        if (targetForm) {
+            targetForm.classList.add('active');
+        }
+
+        // 如果选择了 Typeform，初始化表单
+        if (method === 'detailed') {
+            this.resetTypeform();
+        }
+
+        // 记录事件
+        if (window.microclimateApp) {
+            window.microclimateApp.trackEvent('feedback_method_selected', { method });
+        }
+    }
+
+    selectTypeformOption(event) {
+        const option = event.currentTarget;
+        const step = option.closest('.typeform-step');
+        const stepNumber = parseInt(step.dataset.step);
+        const value = option.dataset.value;
+
+        // 移除同一步骤中其他选项的选中状态
+        step.querySelectorAll('.typeform-option').forEach(opt => {
+            opt.classList.remove('selected');
+        });
+
+        // 添加选中状态
+        option.classList.add('selected');
+
+        // 保存数据
+        this.formData[`step${stepNumber}`] = value;
+
+        // 启用下一步按钮
+        const nextBtn = step.querySelector('.typeform-next-btn');
+        if (nextBtn) {
+            nextBtn.disabled = false;
+        }
+    }
+
+    nextStep() {
+        const currentStepEl = document.querySelector(`.typeform-step[data-step="${this.currentStep}"]`);
+        const nextStepEl = document.querySelector(`.typeform-step[data-step="${this.currentStep + 1}"]`);
+
+        if (currentStepEl && nextStepEl) {
+            // 隐藏当前步骤
+            currentStepEl.classList.remove('active');
+            
+            // 显示下一步骤
+            setTimeout(() => {
+                nextStepEl.classList.add('active');
+            }, 150);
+
+            this.currentStep++;
+
+            // 记录进度
+            if (window.microclimateApp) {
+                window.microclimateApp.trackEvent('typeform_step_completed', { 
+                    step: this.currentStep - 1,
+                    data: this.formData[`step${this.currentStep - 1}`]
+                });
+            }
+        }
+    }
+
+    submitTypeform() {
+        // 收集最后一步的文本输入
+        const finalTextarea = document.querySelector('.typeform-step[data-step="4"] .typeform-textarea');
+        if (finalTextarea) {
+            this.formData.step4 = finalTextarea.value;
+        }
+
+        // 构建完整的反馈数据
+        const feedbackData = {
+            type: 'detailed_typeform',
+            timestamp: Date.now(),
+            sessionId: window.microclimateApp?.sessionId || 'unknown',
+            data: this.formData
+        };
+
+        // 保存到本地存储
+        const existingFeedback = JSON.parse(localStorage.getItem('microclimateDetailedFeedback') || '[]');
+        existingFeedback.push(feedbackData);
+        localStorage.setItem('microclimateDetailedFeedback', JSON.stringify(existingFeedback));
+
+        // 记录事件
+        if (window.microclimateApp) {
+            window.microclimateApp.trackEvent('detailed_feedback_submitted', feedbackData);
+        }
+
+        // 显示成功页面
+        this.showSuccess();
+
+        console.log('详细反馈已提交:', feedbackData);
+    }
+
+    showSuccess() {
+        // 隐藏当前步骤
+        document.querySelector(`.typeform-step[data-step="${this.currentStep}"]`)?.classList.remove('active');
+        
+        // 显示成功页面
+        setTimeout(() => {
+            const successStep = document.querySelector('.typeform-success');
+            if (successStep) {
+                successStep.style.display = 'block';
+                successStep.classList.add('active');
+            }
+        }, 150);
+
+        // 3秒后自动返回主页
+        setTimeout(() => {
+            if (window.microclimateApp) {
+                window.microclimateApp.restartExperience();
+            }
+        }, 3000);
+    }
+
+    resetTypeform() {
+        this.currentStep = 1;
+        this.formData = {};
+
+        // 重置所有步骤
+        document.querySelectorAll('.typeform-step').forEach(step => {
+            step.classList.remove('active');
+        });
+
+        // 显示第一步
+        const firstStep = document.querySelector('.typeform-step[data-step="1"]');
+        if (firstStep) {
+            firstStep.classList.add('active');
+        }
+
+        // 重置成功页面
+        const successStep = document.querySelector('.typeform-success');
+        if (successStep) {
+            successStep.style.display = 'none';
+            successStep.classList.remove('active');
+        }
+
+        // 重置所有选项
+        document.querySelectorAll('.typeform-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+
+        // 重置所有按钮
+        document.querySelectorAll('.typeform-next-btn').forEach(btn => {
+            btn.disabled = true;
+        });
+
+        // 清空文本框
+        document.querySelectorAll('.typeform-textarea').forEach(textarea => {
+            textarea.value = '';
+        });
+    }
+}
+
+// 初始化 Typeform 管理器
+document.addEventListener('DOMContentLoaded', () => {
+    window.typeformManager = new TypeformManager();
+});
+
+// 添加查看详细反馈的调试函数
+window.viewDetailedFeedback = function() {
+    const feedback = JSON.parse(localStorage.getItem('microclimateDetailedFeedback') || '[]');
+    console.log('详细反馈数据:', feedback);
+    
+    if (feedback.length === 0) {
+        console.log('暂无详细反馈数据');
+        return;
+    }
+
+    feedback.forEach((item, index) => {
+        console.log(`\n=== 反馈 ${index + 1} ===`);
+        console.log('时间:', new Date(item.timestamp).toLocaleString());
+        console.log('会话ID:', item.sessionId);
+        console.log('数据:', item.data);
+    });
+
+    return feedback;
+};
